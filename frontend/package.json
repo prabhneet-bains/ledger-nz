@@ -1,0 +1,25 @@
+{
+  "name": "ledger-nz-web",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "predev": "node scripts/write-headers.mjs",
+    "dev": "next dev",
+    "prebuild": "node scripts/write-headers.mjs",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@auth0/auth0-spa-js": "^2.2.4",
+    "@supabase/supabase-js": "^2.47.10",
+    "next": "^14.2.21",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.10",
+    "@types/react": "^18.3.14",
+    "@types/react-dom": "^18.3.5",
+    "typescript": "^5.7.2"
+  }
+}
