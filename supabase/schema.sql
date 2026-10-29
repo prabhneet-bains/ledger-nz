@@ -350,7 +350,19 @@ create trigger on_auth_user_created
 -- they exclude internal transfers and ignored rows.
 -- Expenses are stored as negative gross/net/GST. Input GST is sign-flipped
 -- back to a positive claim. GST_to_Pay = output - input.
+-- current_org_id() is created here because Postgres checks the function body
+-- at creation time. rls.sql replaces it with the same definition.
 -- ---------------------------------------------------------------------------
+create or replace function public.current_org_id()
+returns uuid
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select org_id from public.profiles where id = auth.uid()
+$$;
+
 create or replace function public.pnl_by_account(p_start date, p_end date)
 returns table (account_name varchar, account_type account_type, net_amount numeric)
 language sql

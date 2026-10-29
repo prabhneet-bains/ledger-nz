@@ -132,7 +132,7 @@ export default function ImportPage() {
           <h1>Import a bank CSV</h1>
           <p className="hint">
             Map your bank’s columns, then import. Positive amounts are income. Negative amounts are expenses. Transfers are
-            ignored in the P&amp;L. <a href="/sample-bank.csv">Download a sample</a>.
+            ignored in the {"P&L"}. <a href="/sample-bank.csv">Download a sample</a>.
           </p>
         </div>
       </div>

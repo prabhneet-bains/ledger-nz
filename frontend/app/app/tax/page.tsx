@@ -51,7 +51,7 @@ export default function TaxPage() {
 
   return (
     <AppShell>
-      <h1>GST &amp; tax records</h1>
+      <h1>GST and tax records</h1>
       <p className="hint">GST below uses the date range at the top of the page.</p>
       <section className="grid cards" style={{ marginTop: 16 }}>
         <article className="card">
@@ -118,4 +118,8 @@ export default function TaxPage() {
               </tr>
             ))}
           </tbody>
-        </tab
+        </table>
+      </article>
+    </AppShell>
+  );
+}
