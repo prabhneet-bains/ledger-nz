@@ -74,3 +74,31 @@ drop policy if exists rules_all on public.categorization_rules;
 create policy rules_all on public.categorization_rules
   for all using (org_id = public.current_org_id())
   with check (org_id = public.current_org_id());
+
+-- Table privileges (RLS still limits which rows each role can see).
+-- Fresh Supabase projects do not always inherit these for SQL-created tables.
+grant usage on schema public to anon, authenticated, service_role;
+
+grant select, update on table public.profiles to authenticated;
+grant select, update on table public.organizations to authenticated;
+grant select, insert, update, delete on table public.chart_of_accounts to authenticated;
+grant select, insert, update, delete on table public.transactions to authenticated;
+grant select, insert, update, delete on table public.receipts to authenticated;
+grant select, insert, update, delete on table public.assets_depreciation to authenticated;
+grant select, insert, update, delete on table public.vehicle_logbook to authenticated;
+grant select, insert, update, delete on table public.tax_records_historical to authenticated;
+grant select, insert, update, delete on table public.categorization_rules to authenticated;
+
+grant select, insert, update, delete on table public.organizations to service_role;
+grant select, insert, update, delete on table public.profiles to service_role;
+grant select, insert, update, delete on table public.chart_of_accounts to service_role;
+grant select, insert, update, delete on table public.transactions to service_role;
+grant select, insert, update, delete on table public.receipts to service_role;
+grant select, insert, update, delete on table public.assets_depreciation to service_role;
+grant select, insert, update, delete on table public.vehicle_logbook to service_role;
+grant select, insert, update, delete on table public.tax_records_historical to service_role;
+grant select, insert, update, delete on table public.categorization_rules to service_role;
+grant usage, select on all sequences in schema public to authenticated, service_role;
+grant execute on function public.current_org_id() to authenticated, service_role;
+grant execute on function public.pnl_by_account(date, date) to authenticated, service_role;
+grant execute on function public.gst_period(date, date) to authenticated, service_role;

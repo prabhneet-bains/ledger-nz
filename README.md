@@ -48,7 +48,7 @@ supabase/         SQL schema, RLS, upgrade, seeds
 
 1. Create a project.
 2. In the SQL editor, run `supabase/schema.sql`, then `supabase/rls.sql`, then `supabase/seed.sql`. For Auth0 login, also run `supabase/migration_auth0.sql`.
-3. If you previously applied an older Akahu draft of this schema, run `supabase/migration_csv.sql` as well.
+3. If you previously applied an older Akahu draft of this schema, run `supabase/migration_csv.sql` as well. If API calls return `permission denied for table …`, run `supabase/fix_authenticated_grants.sql`.
 4. Copy the project URL, anon key, service role key, and JWT secret into the API environment and the frontend environment.
 
 Row Level Security isolates every financial table by the organisation on `profiles.id = auth.uid()`. The API sends the user JWT on normal requests, so those policies apply. A new auth user is provisioned with a consultancy chart of accounts and keyword rules.
