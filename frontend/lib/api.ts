@@ -74,6 +74,12 @@ async function send(path: string, init: RequestInit, retried = false): Promise<R
     }
     if (auth0Configured()) return send(path, init, true);
   }
+  if (res.status === 401 && retried && auth0Configured()) {
+    const detail = await errorMessage(res.clone());
+    if (/opaque|not a JWT|Invalid token/i.test(detail)) {
+      throw new Error("Sign out and sign in again so Auth0 can issue an API access token");
+    }
+  }
   return res;
 }
 

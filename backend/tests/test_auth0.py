@@ -72,6 +72,23 @@ def test_auth0_access_token_verifies(monkeypatch):
     assert claims["sub"] == "auth0|ada"
 
 
+def test_auth0_audience_trailing_slash_is_accepted(monkeypatch):
+    private_key, public_key = _rsa()
+    monkeypatch.setattr("app.auth0_login.auth0_jwks_client", lambda _host: _Jwks(public_key))
+    claims = decode_auth0_token(
+        _access_token(private_key),
+        _settings(auth0_audience=AUDIENCE + "/"),
+    )
+    assert claims["sub"] == "auth0|ada"
+
+
+def test_opaque_auth0_token_is_rejected_clearly():
+    with pytest.raises(HTTPException) as exc:
+        decode_auth0_token("opaque-access-token", _settings())
+    assert exc.value.status_code == 401
+    assert "not a JWT" in exc.value.detail
+
+
 def test_id_token_is_rejected_as_an_api_token(monkeypatch):
     private_key, public_key = _rsa()
     monkeypatch.setattr("app.auth0_login.auth0_jwks_client", lambda _host: _Jwks(public_key))

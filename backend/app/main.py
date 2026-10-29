@@ -61,4 +61,6 @@ def health():
         "storage": "sqlite" if local_mode(current) else "supabase",
         # Lets us confirm Render picked up the Pages origin without a trailing slash.
         "cors_allows_pages": "https://ledger-nz.pages.dev" in origins,
+        "auth0": bool(current.auth0_host and current.auth0_audience.strip()),
+        "auth0_host": current.auth0_host or None,
     }

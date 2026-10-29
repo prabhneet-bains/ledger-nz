@@ -59,12 +59,31 @@ def _unauthorized(exc: Exception | None = None) -> HTTPException:
     return HTTPException(status_code=_UNAUTHORIZED, detail="Invalid token")
 
 
+def _audience_values(raw: str) -> list[str]:
+    values: list[str] = []
+    for part in raw.split(","):
+        value = part.strip().strip('"').strip("'")
+        if not value:
+            continue
+        for candidate in (value, value.rstrip("/"), value.rstrip("/") + "/"):
+            if candidate and candidate not in values:
+                values.append(candidate)
+    return values
+
+
 def decode_auth0_token(token: str, settings: Settings, *, audience: str | None = None) -> dict:
     if not settings.auth0_host:
         raise _unauthorized()
     expected_audience = audience if audience is not None else settings.auth0_audience.strip()
-    if not expected_audience:
+    audiences = _audience_values(expected_audience)
+    if not audiences:
         raise _unauthorized()
+    if token.count(".") != 2:
+        # Opaque Auth0 tokens appear when the SPA refresh grant omitted the API audience.
+        raise HTTPException(
+            status_code=_UNAUTHORIZED,
+            detail="Auth0 access token is not a JWT. Sign out and sign in again.",
+        )
     try:
         header = jwt.get_unverified_header(token)
     except jwt.PyJWTError as exc:
@@ -73,15 +92,17 @@ def decode_auth0_token(token: str, settings: Settings, *, audience: str | None =
         raise _unauthorized()
     try:
         signing_key = auth0_jwks_client(settings.auth0_host).get_signing_key_from_jwt(token).key
-        return jwt.decode(
+        claims = jwt.decode(
             token,
             signing_key,
             algorithms=["RS256"],
-            audience=expected_audience,
-            issuer=settings.auth0_issuer,
+            audience=audiences if len(audiences) > 1 else audiences[0],
+            issuer=[settings.auth0_issuer, settings.auth0_issuer.rstrip("/")],
             leeway=10,
         )
+        return claims
     except jwt.PyJWTError as exc:
+        logger.warning("Auth0 token rejected: %s", exc)
         raise _unauthorized(exc) from exc
 
 
