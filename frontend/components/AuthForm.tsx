@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { auth0Configured, finishAuth0Redirect, startAuth0Login } from "@/lib/auth0";
 import { DEV_TOKEN_KEY, devAuthEnabled } from "@/lib/api";
@@ -9,6 +10,7 @@ import { supabaseBrowser, supabaseConfigured } from "@/lib/supabase";
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -26,7 +28,7 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
       .then((dest) => {
         if (cancelled) return;
         if (dest) {
-          window.location.href = dest;
+          router.replace(dest);
           return;
         }
         setChecking(false);
@@ -39,7 +41,7 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
     return () => {
       cancelled = true;
     };
-  }, [showAuth0]);
+  }, [router, showAuth0]);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();

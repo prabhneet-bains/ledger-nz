@@ -85,5 +85,11 @@ export async function auth0AccessToken(force = false): Promise<{ access: string;
 
 export async function auth0SignedIn(): Promise<boolean> {
   const client = await auth0Browser();
-  return client.isAuthenticated();
+  if (await client.isAuthenticated()) return true;
+  try {
+    const access = await client.getTokenSilently({ timeoutInSeconds: 8 });
+    return Boolean(access);
+  } catch {
+    return false;
+  }
 }
