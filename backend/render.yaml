@@ -10,6 +10,7 @@ services:
         value: "3.12.11"
       - key: APP_ENV
         value: production
+      # Exact browser Origin. A trailing slash is not part of Origin and is rejected.
       - key: CORS_ORIGINS
         sync: false
       - key: SUPABASE_URL

@@ -135,7 +135,7 @@ Until those Auth0 variables are set, the email form continues to use Supabase Au
 Use this layout for a personal consultancy ledger at no charge:
 
 1. **Cloudflare Pages** for the frontend. HTTPS is included, and the build publishes the security headers in `frontend/public/_headers`.
-2. **Render** free web service for the API (`backend/render.yaml`). It sleeps after about 15 minutes idle and the next request takes about a minute. No card is required. Set `CORS_ORIGINS` to the Pages origin only.
+2. **Render** free web service for the API (`backend/render.yaml`). It sleeps after about 15 minutes idle and the next request takes about a minute. No card is required. Set `CORS_ORIGINS` to the Pages origin only, with no trailing slash: `https://ledger-nz.pages.dev`. The API also strips a trailing slash if one is saved.
 3. **Supabase** free project for Postgres. Choose the Sydney region when it is offered. A free project pauses after about a week with no traffic. Do not use Render's free Postgres; that database expires.
 4. **Auth0** free tenant for login, as above.
 5. Leave OCR on the workstation and reach it only over Tailscale. Do not publish Ollama on a public port.

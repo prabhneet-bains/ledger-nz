@@ -46,7 +46,14 @@ class Settings(BaseSettings):
 
     @property
     def cors_origin_list(self) -> List[str]:
-        return [item.strip() for item in self.cors_origins.split(",") if item.strip()]
+        # Browsers send Origin with no path and no trailing slash. A value such as
+        # https://ledger-nz.pages.dev/ is therefore not the origin of the live site.
+        origins: list[str] = []
+        for item in self.cors_origins.split(","):
+            origin = item.strip().rstrip("/")
+            if origin and origin not in origins:
+                origins.append(origin)
+        return origins
 
     @property
     def confidence_floor(self) -> float:
