@@ -71,13 +71,26 @@ def _audience_values(raw: str) -> list[str]:
     return values
 
 
+def _token_reason(exc: Exception) -> str:
+    name = type(exc).__name__
+    if "Audience" in name:
+        return f"Invalid token audience ({exc})"
+    if "Issuer" in name:
+        return f"Invalid token issuer ({exc})"
+    if "Expired" in name:
+        return "Access token expired. Sign out and sign in again."
+    if "Signature" in name:
+        return "Invalid token signature"
+    return f"Invalid token ({exc})"
+
+
 def decode_auth0_token(token: str, settings: Settings, *, audience: str | None = None) -> dict:
     if not settings.auth0_host:
-        raise _unauthorized()
+        raise HTTPException(status_code=_UNAUTHORIZED, detail="Auth0 is not configured on the API")
     expected_audience = audience if audience is not None else settings.auth0_audience.strip()
     audiences = _audience_values(expected_audience)
     if not audiences:
-        raise _unauthorized()
+        raise HTTPException(status_code=_UNAUTHORIZED, detail="AUTH0_AUDIENCE is not configured on the API")
     if token.count(".") != 2:
         # Opaque Auth0 tokens appear when the SPA refresh grant omitted the API audience.
         raise HTTPException(
@@ -87,12 +100,12 @@ def decode_auth0_token(token: str, settings: Settings, *, audience: str | None =
     try:
         header = jwt.get_unverified_header(token)
     except jwt.PyJWTError as exc:
-        raise _unauthorized(exc) from exc
+        raise HTTPException(status_code=_UNAUTHORIZED, detail=_token_reason(exc)) from exc
     if header.get("alg") != "RS256":
-        raise _unauthorized()
+        raise HTTPException(status_code=_UNAUTHORIZED, detail=f"Unsupported token algorithm {header.get('alg')}")
     try:
         signing_key = auth0_jwks_client(settings.auth0_host).get_signing_key_from_jwt(token).key
-        claims = jwt.decode(
+        return jwt.decode(
             token,
             signing_key,
             algorithms=["RS256"],
@@ -100,10 +113,9 @@ def decode_auth0_token(token: str, settings: Settings, *, audience: str | None =
             issuer=[settings.auth0_issuer, settings.auth0_issuer.rstrip("/")],
             leeway=10,
         )
-        return claims
     except jwt.PyJWTError as exc:
         logger.warning("Auth0 token rejected: %s", exc)
-        raise _unauthorized(exc) from exc
+        raise HTTPException(status_code=_UNAUTHORIZED, detail=_token_reason(exc)) from exc
 
 
 def _as_bool(value) -> bool | None:

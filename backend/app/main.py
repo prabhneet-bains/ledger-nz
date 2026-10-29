@@ -15,7 +15,7 @@ assert_production(settings)
 
 app = FastAPI(
     title="Ledger NZ API",
-    version="1.1.0",
+    version="1.2.0",
     description="GST-aware accounting API for New Zealand consultancies.",
 )
 

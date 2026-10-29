@@ -66,10 +66,19 @@ def decode_token(token: str, settings: Settings) -> dict:
         header = jwt.get_unverified_header(token)
     except jwt.PyJWTError as exc:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token") from exc
-    if auth0_issuer_matches(unverified_issuer(token), settings):
+    token_issuer = unverified_issuer(token)
+    if auth0_issuer_matches(token_issuer, settings):
         return decode_auth0_token(token, settings)
     if settings.auth0_host and settings.app_env == "production":
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+        expected = settings.auth0_issuer or f"https://{settings.auth0_host}/"
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=(
+                f"Invalid token issuer. Token iss={token_issuer or '(missing)'}; "
+                f"API expects {expected}. Set AUTH0_DOMAIN on Render to the Auth0 tenant host "
+                f"(for example dev-….us.auth0.com)."
+            ),
+        )
     algorithm = header.get("alg")
     try:
         if algorithm in {"ES256", "RS256"}:

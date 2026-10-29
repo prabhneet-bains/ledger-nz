@@ -2,7 +2,12 @@ import re
 from functools import lru_cache
 from typing import List
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def _clean_env(value: str) -> str:
+    return value.strip().strip('"').strip("'")
 
 
 class Settings(BaseSettings):
@@ -29,6 +34,20 @@ class Settings(BaseSettings):
     auth0_domain: str = ""
     auth0_audience: str = ""
     auth0_client_id: str = ""
+
+    @field_validator(
+        "cors_origins",
+        "auth0_domain",
+        "auth0_audience",
+        "auth0_client_id",
+        "supabase_url",
+        mode="before",
+    )
+    @classmethod
+    def strip_env_quotes(cls, value):
+        if isinstance(value, str):
+            return _clean_env(value)
+        return value
 
     google_service_account_file: str = ""
     google_drive_root_folder_id: str = ""
