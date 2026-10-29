@@ -1,7 +1,7 @@
 import { auth0AccessToken, auth0Configured } from "./auth0";
 import { supabaseBrowser, supabaseConfigured } from "./supabase";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/+$/, "");
 export const DEV_TOKEN_KEY = "ledger_dev_token";
 
 export function devAuthEnabled(): boolean {

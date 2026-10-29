@@ -7,7 +7,7 @@ import { auth0Configured, finishAuth0Redirect, startAuth0Login } from "@/lib/aut
 import { DEV_TOKEN_KEY, devAuthEnabled } from "@/lib/api";
 import { supabaseBrowser, supabaseConfigured } from "@/lib/supabase";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/+$/, "");
 
 export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
   const router = useRouter();
