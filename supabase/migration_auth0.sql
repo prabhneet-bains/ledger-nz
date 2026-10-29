@@ -17,4 +17,7 @@ create index if not exists auth_identities_user_id_idx on public.auth_identities
 
 alter table public.auth_identities enable row level security;
 
+-- Browser roles must not read Auth0 subject links. The API uses the service role
+-- only for the first-login lookup/insert, then continues under the user JWT + RLS.
 revoke all on table public.auth_identities from anon, authenticated;
+grant select, insert, update on table public.auth_identities to service_role;
