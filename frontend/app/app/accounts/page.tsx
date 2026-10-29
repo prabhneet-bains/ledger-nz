@@ -13,7 +13,6 @@ export default function AccountsPage() {
     tax_rate: "15",
     business_claim_percentage: "100",
   });
-  const [akahuToken, setAkahuToken] = useState("");
   const [error, setError] = useState("");
 
   async function load() {
@@ -26,19 +25,18 @@ export default function AccountsPage() {
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
-    await apiSend("/accounts", "POST", {
-      ...form,
-      tax_rate: Number(form.tax_rate),
-      business_claim_percentage: Number(form.business_claim_percentage),
-    });
-    setForm({ ...form, account_name: "" });
-    await load();
-  }
-
-  async function saveAkahu(event: FormEvent) {
-    event.preventDefault();
-    await apiSend("/integrations/akahu", "PUT", { akahu_user_token: akahuToken });
-    setAkahuToken("");
+    try {
+      await apiSend("/accounts", "POST", {
+        ...form,
+        tax_rate: Number(form.tax_rate),
+        business_claim_percentage: Number(form.business_claim_percentage),
+      });
+      setForm({ ...form, account_name: "" });
+      setError("");
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not create account");
+    }
   }
 
   return (
@@ -97,17 +95,6 @@ export default function AccountsPage() {
           </tbody>
         </table>
       </article>
-      <form className="card" onSubmit={saveAkahu} style={{ marginTop: 16 }}>
-        <h2>Akahu user token</h2>
-        <p className="hint">Stored for webhook mapping. Point Akahu at POST /webhooks/akahu on the API host.</p>
-        <label>
-          Token
-          <input value={akahuToken} onChange={(e) => setAkahuToken(e.target.value)} />
-        </label>
-        <button className="btn" style={{ marginTop: 12 }}>
-          Save
-        </button>
-      </form>
     </AppShell>
   );
 }

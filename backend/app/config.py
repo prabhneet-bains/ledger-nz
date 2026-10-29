@@ -1,3 +1,4 @@
+import re
 from functools import lru_cache
 from typing import List
 
@@ -10,7 +11,8 @@ class Settings(BaseSettings):
     app_env: str = "development"
     api_host: str = "0.0.0.0"
     api_port: int = 8000
-    cors_origins: str = "http://localhost:3000"
+    # Comma-separated browser Origins. No trailing slash.
+    cors_origins: str = "http://localhost:3000,https://ledger-nz.pages.dev"
 
     database_url: str = "sqlite:///./ledger.db"
     allow_dev_auth: bool = False
@@ -46,14 +48,24 @@ class Settings(BaseSettings):
 
     @property
     def cors_origin_list(self) -> List[str]:
-        # Browsers send Origin with no path and no trailing slash. A value such as
-        # https://ledger-nz.pages.dev/ is therefore not the origin of the live site.
+        # Browsers send Origin with no path and no trailing slash. Keep both forms so a
+        # dashboard value like https://ledger-nz.pages.dev/ still matches the live site.
         origins: list[str] = []
         for item in self.cors_origins.split(","):
             origin = item.strip().rstrip("/")
-            if origin and origin not in origins:
-                origins.append(origin)
+            if not origin:
+                continue
+            for candidate in (origin, f"{origin}/"):
+                if candidate not in origins:
+                    origins.append(candidate)
         return origins
+
+    @property
+    def cors_origin_regex(self) -> str | None:
+        bases = [item.strip().rstrip("/") for item in self.cors_origins.split(",") if item.strip()]
+        if not bases:
+            return None
+        return r"^(" + "|".join(re.escape(base) + r"/?" for base in dict.fromkeys(bases)) + r")$"
 
     @property
     def confidence_floor(self) -> float:

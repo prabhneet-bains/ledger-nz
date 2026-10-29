@@ -10,9 +10,9 @@ services:
         value: "3.12.11"
       - key: APP_ENV
         value: production
-      # Exact browser Origin. A trailing slash is not part of Origin and is rejected.
+      # Exact browser Origin (no trailing slash). Override in the dashboard if the Pages URL changes.
       - key: CORS_ORIGINS
-        sync: false
+        value: https://ledger-nz.pages.dev
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_ANON_KEY

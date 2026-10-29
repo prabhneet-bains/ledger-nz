@@ -22,6 +22,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
+    allow_origin_regex=settings.cors_origin_regex,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "X-Auth0-Id-Token"],
@@ -53,4 +54,11 @@ def startup() -> None:
 @app.get("/health")
 def health():
     current = get_settings()
-    return {"status": "ok", "env": current.app_env, "storage": "sqlite" if local_mode(current) else "supabase"}
+    origins = current.cors_origin_list
+    return {
+        "status": "ok",
+        "env": current.app_env,
+        "storage": "sqlite" if local_mode(current) else "supabase",
+        # Lets us confirm Render picked up the Pages origin without a trailing slash.
+        "cors_allows_pages": "https://ledger-nz.pages.dev" in origins,
+    }
